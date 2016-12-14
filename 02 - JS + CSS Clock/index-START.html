@@ -61,12 +61,51 @@
       background:black;
       position: absolute;
       top:50%;
+      transform-origin: 100%; /* along x-axis, 0% would be left, 100% is at right.
+                                 so this will make the origin point the right side,
+                                 which in our case is the pivot point in the center
+                                 of the clock face. otherwise each hand spins
+                                 at the center of the hand, not at one end. */
+      transform: rotate(90deg); /* rotate all the hands 90º so they start at 12 */
+      transition: all 0.05s; /* how long the transition takes (the 1-sec "tick" )*/
+      transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1);
+            /* this defines how the hand moves during transition. this one moves and
+               bounces back a little, for a fun effect. there's like a little
+               gui editor in chrome dev tools you can use for this?? */
     }
 
   </style>
 
   <script>
+    const secondHand = document.querySelector('.second-hand');
+    const minuteHand = document.querySelector('.min-hand');
+    const hourHand = document.querySelector('.hour-hand');
 
+    function setDate() {
+        const now = new Date();
+
+        const seconds = now.getSeconds();
+        // calculate the seconds
+        // first, divide seconds by 60, this gives you a percentage
+        // e.g. 5 / 60 = 8.3%
+        // multiply that percentage by 360 degrees to get current position
+        // add 90 to that to offset the fact that we started at 90, not 0.
+        const secondsDegrees = ((seconds / 60) * 360) + 90;
+        // set the transform property so we rotate that number of degrees
+        secondHand.style.transform = `rotate(${secondsDegrees}deg)`;
+
+        const minutes = now.getMinutes();
+        const minutesDegrees = ((minutes / 60) * 360) + 90;
+        minuteHand.style.transform = `rotate(${minutesDegrees}deg)`;
+
+        const hours = now.getHours();
+        // divide by 12, not 60
+        const hoursDegrees = ((hours / 12) * 360) + 90;
+        hourHand.style.transform = `rotate(${hoursDegrees}deg)`;
+    }
+
+    // run this once per 1000ms (1s)
+    setInterval(setDate, 1000);
 
   </script>
 </body>
