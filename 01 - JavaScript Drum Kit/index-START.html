@@ -59,6 +59,43 @@
 
 <script>
 
+    function playSound(e) {
+        // Get the <audio> element and <div.key> that matches our key
+        const audio = document.querySelector(`audio[data-key="${e.keyCode}"]`);
+        const key = document.querySelector(`.key[data-key="${e.keyCode}"]`);
+
+        if (!audio) return; // stop function from running if this isn't a hot key.
+        audio.currentTime = 0; // rewind audio to start, otherwise can't jam on the key!
+        audio.play();
+
+        key.classList.add('playing'); // add the class to grow / color border
+    }
+
+    // whenever a key is pressed, run playSound
+    window.addEventListener('keydown', playSound);
+
+    // Instead of using setTimeout or something, remove the transition
+    // effect by watching for transitions to end, then remove the class.
+    // I guess this also runs when we transition back, but then if it removes
+    // the class again, so what, it won't start a new transition anyway.
+    function removeTransition(e) {
+        if (e.propertyName !== 'transform') return; // skip if not a transform
+            // that is because a lot of stuff fires; many things transitioned,
+            // so many things fire on transitionend. But we only want to take
+            // action for one of them, and transform is the event we are watching
+            // here, ignoring the others.
+        this.classList.remove('playing'); // remove the class; button goes back to "unpressed"
+        // Here, 'this' is the key, because we are running this function from an event
+        // listener that was attached to a key (below, in the forEach)
+    }
+
+    const keys = document.querySelectorAll('.key');
+    // You have to use forEach here, to add event listener to each.
+    // Note keys is not an array, it is a NodeList, they are different things.
+
+    // Whenever a transitionend fires, run our function to take key back to normal.
+    keys.forEach(key => key.addEventListener('transitionend', removeTransition));
+
 </script>
 
 
