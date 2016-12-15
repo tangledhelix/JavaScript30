@@ -22,6 +22,25 @@
 
   <style>
 
+    /* :root is the highest you can go - nothing is more base than :root */
+    :root {
+        /* variable names are prefixed with -- ... that's just the spec. */
+        --base: #ffc600;
+        --spacing: 10px;
+        --blur: 10px;
+    }
+
+    img {
+        /* fetch the value using var() to sub in the CSS var in this place */
+        padding: var(--spacing);
+        background: var(--base);
+        filter: blur(var(--blur));
+    }
+
+    .hl {
+        color: var(--base);
+    }
+
     /*
       misc styles, nothing to do with CSS variables
     */
@@ -48,6 +67,28 @@
   </style>
 
   <script>
+    const inputs = document.querySelectorAll('.controls input');
+
+    function handleUpdate() {
+        // use the HTML attrib data attrs, e.g. data-sizing, to determine the
+        // unit (the slider just says e.g. "10" not "10px").
+
+        // dataset has all the "data-" attributes on the element. Handy!
+        const suffix = this.dataset.sizing || '';   // alt. case in case no data-sizing
+
+        // update the value, to affect the DOM and produce the visible effect
+        // name is taken from the name attr on the input element. Same for value
+        document.documentElement.style.setProperty(`--${this.name}`, this.value + suffix);
+    }
+
+    // listen for a change; this is when you change the value. On a slider,
+    // it's when you let go and the new value is set.
+    inputs.forEach(input => input.addEventListener('change', handleUpdate));
+
+    // listen for mousemove also. This will fire as you slide a slider
+    // around, even without letting go. So this is how we get the behavior
+    // of scrubbing across the slider and the values are changing in realtime.
+    inputs.forEach(input => input.addEventListener('mousemove', handleUpdate));
   </script>
 
 </body>
