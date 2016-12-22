@@ -24,6 +24,17 @@
     .panels {
       min-height:100vh;
       overflow: hidden;
+      /* changing display to flex will take these horizontally stacked
+       * boxes and make them side by side. Why is that? Not exactly
+       * explained, but can research what flexbox is later.
+       *
+       * Wes has much more at flexbox.io.
+       *
+       * Just doing this and nothing else repositions them side by side,
+       * auto-width according to the widest word within each box.
+       * the rest of the container is just blank space (yellow in this case)
+       */
+      display: flex;
     }
 
     .panel {
@@ -34,6 +45,7 @@
       align-items:center;
       /* Safari transitionend event.propertyName === flex */
       /* Chrome + FF transitionend event.propertyName === flex-grow */
+      /* This is the bit that does the animation on changes */
       transition:
         font-size 0.7s cubic-bezier(0.61,-0.19, 0.7,-0.11),
         flex 0.7s cubic-bezier(0.61,-0.19, 0.7,-0.11),
@@ -41,6 +53,20 @@
       font-size: 20px;
       background-size:cover;
       background-position:center;
+      /* This tells the boxes to evenly distribute themselves to be equal within
+       * the container. Why? It's explained later.
+       */
+      flex: 1;
+      /* center the text left-to-right in the box */
+      /* .. but it already was? */
+      justify-content: center;
+      align-items: center;
+      /* this is the magic change that spreads the words out top to bottom */
+      /* so the other flex (.panels) we flex'd it to spread left to right */
+      /* here, inside we are making each panel also a flex box. */
+      display: flex;
+      /* And this is how we get them to stack top to bottom intead of left to right */
+      flex-direction: column;
     }
 
 
@@ -50,11 +76,34 @@
     .panel4 { background-image:url(https://source.unsplash.com/ITjiVXcwVng/1500x1500); }
     .panel5 { background-image:url(https://source.unsplash.com/3MNzGlQM7qs/1500x1500); }
 
+    /* Flex children */
     .panel > * {
       margin:0;
       width: 100%;
       transition:transform 0.5s;
+      /* This is here to help visualization */
+      /*border: 1px solid red;*/
+      /* this spreads the text out top to bottom in each column */
+      /* Really it just seems to make each box take up 1/3 (its share) of
+       * the container. The word is still at the top of its section/box */
+      flex: 1 0 auto;
+      /* this makes it another flex box (inside anothe rinside another!)
+       * but the words are now upper left corner... */
+      display: flex;
+      /* and let's center this stuff... */
+      /* so now they are all centered in their own boxes. yay */
+      justify-content: center;
+      align-items: center;
     }
+
+    /* hide the top/bottom rows from the window, put them offscreen */
+    .panel > *:first-child { transform: translateY(-100%); }
+    .panel > *:last-child { transform: translateY(100%); }
+
+    /* when panel is open & active, show those rows again */
+    /* actually it will animate */
+    .panel.open-active > *:first-child { transform: translateY(0); }
+    .panel.open-active > *:last-child { transform: translateY(0); }
 
     .panel p {
       text-transform: uppercase;
@@ -68,6 +117,9 @@
 
     .panel.open {
       font-size:40px;
+      /* this means to take up 5x the room of the others. */
+      /* the others take up 1 (flex:5), this one takes up 5 */
+      flex: 5;
     }
 
     .cta {
@@ -107,6 +159,29 @@
   </div>
 
   <script>
+
+  // Get all panels
+  const panels = document.querySelectorAll('.panel')
+
+  // toggle the open class on this element
+  function toggleOpen() {
+      this.classList.toggle('open')
+  }
+
+  // toggle the open-active class on this element
+  function toggleActive(e) {
+      // note: in safari this is just 'flex'
+      // in others it is 'flex-grow'
+      if (e.propertyName.includes('flex')) {
+          this.classList.toggle('open-active');
+      }
+  }
+
+  // when we click, togggle the open class
+  panels.forEach(panel => panel.addEventListener('click', toggleOpen))
+
+  // when the transition has finished, toggle the open-active class
+  panels.forEach(panel => panel.addEventListener('transitionend', toggleActive))
 
   </script>
 
