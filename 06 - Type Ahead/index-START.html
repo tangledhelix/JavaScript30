@@ -17,6 +17,73 @@
 <script>
 const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
 
+const cities = [];
+
+// Fetch will fetch whatever you pass it, and return a promise.
+fetch(endpoint)
+    .then(blob => blob.json())      // When resolved, we have the data. Now we want to
+                                    // turn that data into JSON. The json() method returns
+                                    // anther promise.
+    .then(data => cities.push(...data));    // When that promise resolves (we have JSON now), we want
+                                            // to put that into our array using the spread operator
+                                            // and push(). If you give multiple args to push, it pushes
+                                            // each one onto the array. This will give us an array of the
+                                            // cities that were returned.
+
+// A function to locate matches in our array of data.
+function findMatches(wordToMatch, cities) {
+    // Use filter() to return a subset of cities which match the search.
+    return cities.filter(place => {
+        // here we need to figure out if the city or state matches what was searched
+        const regex = new RegExp(wordToMatch, 'gi');
+        // check if this regex (the search string) matches against the current city
+        // or state. `place` is the entry to match.
+        // If either of these matches, the function returns true, therefore this
+        // entry will be included in the filtered set.
+        return place.city.match(regex) || place.state.match(regex);
+    });
+}
+
+// Format the number nicely with commas
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// Display whatever matches we have found
+function displayMatches() {
+    // Get the matches using findMatches
+    const matchArray = findMatches(this.value, cities);
+    // Build a little HTML to insert for each match.
+    // Assign to each element using map()
+    // Make one string instead of array using join()
+    const html = matchArray.map(place => {
+        // Use a regex to replace the portion of the data that matches the search
+        // string with a span of class "hl". This will highlight the part of the
+        // word which was the search, and leave the rest as regular text.
+        const regex = new RegExp(this.value, 'gi');
+        const cityName = place.city.replace(regex, `<span class="hl">${this.value}</span>`)
+        // Use cityName instead of place.city in this (to get the matched data).
+        // Same for state.
+        const stateName = place.state.replace(regex, `<span class="hl">${this.value}</span>`)
+        return `
+            <li>
+                <span class="name">${cityName}, ${stateName}</span>
+                <span class="population">${numberWithCommas(place.population)}</span>
+            </li>
+        `;
+    }).join('');
+    // And stick this into the DOM as an HTML node
+    suggestions.innerHTML = html;
+}
+
+// Grab a couple of DOM nodes...
+const searchInput = document.querySelector('.search');
+const suggestions = document.querySelector('.suggestions');
+
+// Event listener - when the input box changes, run the findMatches function
+searchInput.addEventListener('change', displayMatches);
+searchInput.addEventListener('keyup', displayMatches);
+
 </script>
   </body>
 </html>
